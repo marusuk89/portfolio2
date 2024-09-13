@@ -1,0 +1,598 @@
+@localUrl =  http://localhost:8000
+@httpsUrl = http://ec2-15-165-132-133.ap-northeast-2.compute.amazonaws.com
+@ec2Url = http://ec2-15-165-132-133.ap-northeast-2.compute.amazonaws.com:8000
+@jwt_partner = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjY4OTkzODY4LCJpYXQiOjE2NjgxMjk4NjgsImp0aSI6IjFjZjgyYTdmMTk4ZTQyZDU5NmI0ZTg1ODFjNmJkMzJjIiwidXNlcl9pZCI6MjAsImNhdGVnb3J5IjoiXHVkMzBjXHVkMmI4XHViMTA4IiwiaXNfc3VwZXJ1c2VyIjpmYWxzZX0.tvUdrVKJajDIJ7_xEuDlSxVHfJNvTKSejNU1XfW_aKo
+@jwt_tenant = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc5NTQzNzczLCJpYXQiOjE2Nzg2Nzk3NzMsImp0aSI6ImI2YmJkMTM3NzVhZTQ1ZGU5NGM1OTI2MzgwNDQwMGVkIiwidXNlcl9pZCI6NTcsImNhdGVnb3J5IjoiXHViM2Q5XHViMzAwXHVkNDVjIiwiaXNfc3VwZXJ1c2VyIjpmYWxzZX0.7W54pN1gQdeaVqNSBLN7gbJl6xRJzKvmJ526d9AHOtE
+@jwt_represent = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc5NTMyMzg1LCJpYXQiOjE2Nzg2NjgzODUsImp0aSI6IjY2MjljYTlkOTA3NTRhMTQ5ZGVjMmNlMzU1OWIyMzU2IiwidXNlcl9pZCI6NTQsImNhdGVnb3J5IjoiXHViM2Q5XHViMzAwXHVkNDVjIiwiaXNfc3VwZXJ1c2VyIjpmYWxzZX0.PzkfVxE0_v8jrzKwsfQXafkhsa6yVL_RJo3h0IUO8pA
+@jwt_admin = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc5NTMxNTEzLCJpYXQiOjE2Nzg2Njc1MTMsImp0aSI6ImM5OTQzYWI3Njc4YzQyOGU4MjFiMzhiMWFkYjk5ODVjIiwidXNlcl9pZCI6NTIsImNhdGVnb3J5IjoiXHVhZDAwXHViOWFjXHVjNzkwIiwiaXNfc3VwZXJ1c2VyIjpmYWxzZX0.90ZrgC6kzB_H_wIbaxgXItFbDSVAAvsocAJ1Te-Ti60
+
+###회원가입
+POST {{ec2Url}}/users/register HTTP/1.1
+Content-Type: application/json
+
+{
+  "name" : "31102",
+  "password" : "1234",
+  "phone_number" : "2222",
+  "category" : "관리자"
+}
+
+###토큰가져오기(로그인)
+POST {{httpsUrl}}/users/token HTTP/1.1
+Content-Type: application/json
+
+{
+  "phone_number": "000",
+  "password": "1234"
+}
+
+///계정 정보
+### 로그인 정보 조회(입주민/동대표는 자신의 방 관련 정보, 관리자는 관리중인 모든 건물 리스트 조회)
+GET  {{localUrl}}/users/loginbuildinginfo
+Content-Type: application/json
+Authorization: Bearer {{jwt_represent}}
+
+///계정 정보
+### 입주민과 용역업체가 등록되어 있는지 확인 하는 api params : building_id
+GET  {{localUrl}}/users/istenantandpartner/7
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+///계정 정보
+### 관리자의 경우 자신의 업체 정보 보기
+GET  {{localUrl}}/users/mycompanyinfo
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+
+#### 동대표 정보 가져오기
+GET  {{localUrl}}/users/getrepinfo
+Content-Type: application/json
+Authorization: Bearer {{jwt_tenant}}
+
+///공지사항
+####  공지사항 조회 params : building_id
+GET  {{localUrl}}/board/noticelistread/1
+Content-Type: application/json
+Authorization: Bearer {{jwt_represent}}
+
+####  공지사항 추가/수정 params : building_id/notice_id (notice_id가 0이면 추가 아니면 수정)
+POST  {{localUrl}}/board/noticelistcreate/1/0
+Content-Type: application/json
+Authorization: Bearer {{jwt_represent}}
+
+{
+    "title":"얍 ",
+    "body":2
+}
+
+####  공지사항 삭제 params : notice_id
+DELETE {{localUrl}}/board/noticelistdelete/37
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+
+///차량
+### 차량 조회 params : building_id/car_number
+GET  {{ec2Url}}/manage/carlistread/1/56
+Content-Type: application/json
+Authorization: Bearer {{jwt_tenant}}
+
+///이사계획
+####  이사계획 추가 (동대표, 입주민)
+POST  {{ec2Url}}/contract/moveplancreate
+Content-Type: application/json
+Authorization: Bearer {{jwt_tenant}}
+
+{
+    "move_date" : "2023-03-02"
+}
+
+#### 이사계획 관리자, 동대표 건물 전체 조회용
+GET  {{localUrl}}/contract/moveplanreadlist/1
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+#### 이사계획 동대표, 입주민 자기자신 조회용
+GET  {{ec2Url}}/contract/moveplanread
+Content-Type: application/json
+Authorization: Bearer {{jwt_represent}}
+
+#### 이사계획 하나 선택시 params : building_id
+GET  {{ec2Url}}/contract/moveplanreadone/22
+Content-Type: application/json
+Authorization: Bearer {{jwt_represent}}
+
+####   
+DELETE  {{ec2Url}}/contract/moveplandelete
+Content-Type: application/json
+Authorization: Bearer {{jwt_tenant}}
+
+//내 회사
+####내 회사 등록 or 수정
+POST  {{localUrl}}/contract/agencyupdate
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+{
+    "agency_name" : "관리대행A",
+    "bin_number" : "111",
+    "address_name" : "서울 영등포구 국회대로 72길 22",
+    "address_detail" : "305호",
+    "road_address" : "도로명 주소",
+    "region_1depth_name" : "서울",
+    "region_2depth_name" : "영등포구",
+    "region_3depth_name" : "여의도동",
+    "call_number" : "070-2345-6342",
+    "homepage" : "daehangA.net",
+    "user_name" : "admin12"
+}
+
+####내 회사 조회 
+GET  {{localUrl}}/contract/agencyread
+Content-Type: application/json
+Authorization: Bearer {{jwt_represent}}
+
+####회사/건물등록/계약정보까지 한번에 params : building_id 이며, 생성은 0, 수정은 특정 id
+POST  {{localUrl}}/contract/agencybuildingcreate/19
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+{
+    "building_name" : "관리건물A-2",
+    "address_name" : "서울 관악구 신림동 75-6",
+    "road_address" : "도로명 주소",
+    "region_1depth_name" : "서울",
+    "region_2depth_name" : "관악구",
+    "region_3depth_name" : "신림동",
+    "elvt_cnt" : 1,
+    "total_floor" : 5,
+    "total_area" : "4686.15",
+    "household_cnt" : 6,
+    "memo" : "첫 번째 건물",
+    "contract_name" : "계약명이다",
+    "contract_start" : "2022-02-01",
+    "contract_end" : "2022-02-01",
+    "contractor_name" : "계약자",
+    "contractor_phone_number" : "023",
+    "contract_memo" : "청소, 소방, 전기 관리 중"
+}
+
+####회사/건물조회 params : building_id
+GET  {{localUrl}}/contract/agencybuildingread/1
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+####회사/건물삭제 params : building_id
+DELETE  {{localUrl}}/contract/agencybuildingdelete/19
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+
+//하자보수
+####하자보수/생성(postman)
+####하자보수/조회(list) params : building_id
+GET  {{localUrl}}/manage/repairreportread/1 
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+####하자보수/삭제 params : building_id/repair_report_id
+DELETE  {{ec2Url}}/manage/repairreportdelete/1/2
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+
+####월간보고서/생성(postman) params : building_id/monthly_report_id
+####월간보고서/조회 params : building_id/year
+GET  {{localUrl}}/manage/monthlyreportread/1/2023
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+####월간보고서/삭제 params : building_id/monthly_report_id
+DELETE  {{localUrl}}/manage/monthlyreportdelete/1/23
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+####입주민 등록/수정 category 동대표/입주민, 
+####params : building_id/room_id (새로운 등록은 room_id를 0, 수정은 해당 room_id 입력)
+POST  {{localUrl}}/contract/agencytenantcreate/13/0
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+{
+    "user_phone_number" : "0102213151",
+    "user_name" : "입주민1",
+    "fcm_token" : "12311",
+    "user_category" : false,
+    "room_number" : "2052786",
+    "car_number" : "서울 가 1234",
+    "monthly_charge" : 70000,
+    "paying_date" : 6,
+    "contract_start" : "2022-02-03",
+    "contract_end" : "2024-02-03",
+    "is_living" : 1,
+    "memo" : "2232323"
+}
+
+####입주민 조회 리스트 params : building_id
+GET  {{localUrl}}/contract/tenantread/1
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+####입주민 삭제 params : building_id
+DELETE  {{localUrl}}/contract/agencytenantdelete/52
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+####용역업체 등록/수정
+####params : building_id/partner_id (새로운 등록은 partner_id 0, 수정은 해당 partner_id 입력)
+POST  {{localUrl}}/contract/agencypartnercreate/1/0
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+{
+    "name" : "테스트업체2",
+    "call_number" : "0701234",
+    "ceo_name" : "용역대표1",
+    "ceo_phone_number" : "0106666",
+    "category" : "청소",
+    "address_name" : "서울특별시 강서구 강서로22길 13-3",
+    "address_detail" : "302호",
+    "road_address" : "아무튼 도로명 주소",
+    "region_1depth_name" : "서울",
+    "region_2depth_name" : "강서구",
+    "region_3depth_name" : "화곡동",
+    "latitude" : "37.488264053",
+    "longitude" : "126.853292243",
+    "start_date" : "2022-05-07",
+    "end_date" : "2022-05-07",
+    "memo" : "아무튼 메모임3"
+}
+
+####용역업체 조회 리스트 params : building_id
+GET  {{ec2Url}}/contract/agencypartnerread/1
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+####용역업체 조회 params : partner_id
+GET  {{ec2Url}}/contract/agencypartnerreadone/15
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+####용역업체 삭제 params : partner_id
+DELETE  {{localUrl}}/contract/agencypartnerdelete/12
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+####cron 테스트 
+GET  {{localUrl}}/contract/testcron
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+###입주민 / 개인 납부 월별 조회 params : year, month 동대표 or 입주민의 자신의 관리비 납부 정보를 월별로 보는
+GET  {{localUrl}}/manage/tenantbillreadbymonthone/2023/2
+Content-Type: application/json
+Authorization: Bearer {{jwt_represent}}
+
+
+###입주민 입장 미납 조회(결제 하는 메뉴) params : bilding_id
+GET  {{localUrl}}/manage/tenantbillreadnotpaid/1
+Content-Type: application/json
+Authorization: Bearer {{jwt_represent}}
+
+###입주민 입장 미납 조회(결제 하는 메뉴) params : bilding_id
+GET  {{localUrl}}/manage/payment_success?payment_key=22&order_id=20230313_aCxNj_18_2023_3&amount=100000
+Content-Type: application/json
+Authorization: Bearer {{jwt_tenant}}
+
+###관리자or동대표 / 모든 세입자들의 관리비 리스트 params : building_id 관리자 or 동대표가 모든 입주민들의 관리비 리스트 조회하는 용도
+GET  {{localUrl}}/manage/tenantbillreadlist/1
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+###관리자or동대표 / 한 호수의 연별 관리비 params : year, room_id 
+###관리자의 경우 리스트의 0번째에 total_non_paid_amount(총 미납금액), current_monthly_charge(현재 관리비)를 추가했습니다
+GET  {{localUrl}}/manage/tenantbillreadbyroom/2023/18
+Content-Type: application/json
+Authorization: Bearer {{jwt_represent}}
+
+###
+POST  {{localUrl}}/manage/payment_confirm
+Content-Type: application/json
+Authorization: Bearer {{jwt_represent}}
+
+{
+    "paymentKey": "ioFbaqvOf3kAvPH5y1GFw",
+    "orderId": "dQQeS_16_2023_2",
+    "amount": 15000
+}
+
+###
+POST  {{localUrl}}/manage/payment_success
+Content-Type: application/json
+Authorization: Bearer {{jwt_represent}}
+
+{
+    "paymentKey": "ioFbaqvOf3kAvPH5y1GFw",
+    "orderId": "dQQeS_16_2023_2",
+    "amount": 15000
+}
+
+
+###
+GET  {{localUrl}}/users/request_confirm/01062210264
+Content-Type: application/json
+Authorization: Bearer {{jwt_represent}}
+
+###
+POST  {{localUrl}}/users/updatealarmchecktime/712
+Content-Type: application/json
+Authorization: Bearer {{jwt_represent}}
+
+{
+    "alarm_check_time": "2023-03-25 11:00:00"
+}
+
+###
+GET  {{localUrl}}/board/noticereadnew
+Content-Type: application/json
+Authorization: Bearer {{jwt_represent}}
+
+####모든 회사 조회 
+GET  {{localUrl}}/contract/agencyreadall
+Content-Type: application/json
+
+####회사에 속한 건물 조회 
+GET  {{localUrl}}/contract/agencyreadone/1
+Content-Type: application/json
+
+####회사에 속한 건물의 총 비용 조회
+GET  {{localUrl}}/contract/agencyreadbill/1/2023/2
+Content-Type: application/json
+
+####회사 생성
+POST  {{localUrl}}/contract/agencycreate
+Content-Type: application/json
+
+{
+  "id": 1,
+  "name": "관리의 달인",
+  "bin_number": "20-11-99564",
+  "address_name": "경기 부천시 옥길동 748-1",
+  "address_detail": "510동 1801호",
+  "road_address": "경기 부천시 양지로 234-38",
+  "region_1depth_name": "경기",
+  "region_2depth_name": "부천시",
+  "region_3depth_name": "옥길동",
+  "call_number": "028475938",
+  "homepage": "https://www.jumo.net"
+}
+
+####자기 핸드폰번호
+GET  {{localUrl}}/users/phonenumberread
+Content-Type: application/json
+Authorization: Bearer {{jwt_represent}}
+
+###
+POST  {{httpsUrl}}/api/save_fcm_token
+Content-Type: application/json
+
+{
+    "phone_number": "000",
+    "fcm_token": "dQQeS_16_2023_2"
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#### 이슈리스트  
+GET  {{ec2Url}}/manage/issue_by_building/14?is_handled=True HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+####   
+POST  {{localUrl}}/board/list
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+###
+GET {{httpsUrl}}/info/building_info/14
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+###
+GET {{httpsUrl}}/manage/car_search_list/14
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+
+####   
+GET  {{localUrl}}/contract/buildings?page=1 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+
+###
+GET  {{localUrl}}/manage/tenant_bill_for_tenant/2022/10 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+
+###
+
+
+###
+GET  {{httpsUrl}}/manage/rate/1 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+###
+
+#### 빌딩정보  
+GET  {{localUrl}}/info/building_detail/1 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+#### 회사정보  
+GET  {{localUrl}}/info/company/1 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+###
+
+
+
+
+###
+GET  {{localUrl}}/manage/partner_bill/14/2022/11 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+
+###
+POST  {{localUrl}}/info/building_add
+Content-Type: application/json
+Authorization: Bearer {{jwt_admin}}
+
+{
+  "name":"테스트빌딩",
+  "address_new":"서울특별시 종로구 청운동 1번지 ",
+  "house_hold_cnt":1,
+  "total_floor":63,
+  "elvt_cnt":4,
+  "owner_represent_name":"슈퍼맨",
+  "owner_represent_phone_number":"01011111111"
+}
+
+
+### 관리자모드
+GET {{localUrl}}/administer/get_unkown_transaction
+Content-Type: application/json
+Authorization: Bearer {{jwt_represent}}
+
+
+### 관리자모드
+POST {{localUrl}}/administer/send_personal_sms
+Content-Type: application/json
+Authorization: Bearer {{jwt_represent}}
+
+{
+  "phone_number":"01012341234",
+  "message":"hello"
+}
+
+
+
+### 관리자모드
+GET {{localUrl}}/administer/issue_list?page=1&is_handled=Both
+Content-Type: application/json
+Authorization: Bearer {{jwt_represent}}
+
+### 
+PUT {{localUrl}}/adminster/set_non_paid_partner_paid/80
+Content-Type: application/json
+Authorization: Bearer {{jwt_represent}}
+
+{
+  "paid_date": "2022-11-02",
+  "paid_amount": 1000,
+  "whole_text":"내가 입금함"
+}
+
+
+###이슈리스트
+GET  {{localUrl}}/manage/issue_reports
+Content-Type: application/json
+Authorization: Bearer {{jwt_represent}}
+
+###
+PUT  {{localUrl}}/manage/issue_update/
+Content-Type: application/json
+Authorization: Bearer {{jwt_represent}}
+
+{
+
+}
+
+
+###
+GET  {{httpsUrl}}/manage/issue_report/14/109
+Content-Type: application/json
+Authorization: Bearer {{jwt_represent}}
+
+
+
+###
+###
+GET  {{httpsUrl}}/manage/issue_by_building/14?is_handled=False HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{jwt_represent}}
+
+###
+GET  {{localUrl}}/manage/issues?is_handled=True HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{jwt_represent}}
+
+###
+GET  {{localUrl}}/manage/issues?is_handled=True HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{jwt_represent}}
+
+
+
+###월간보고서
+GET  {{httpsUrl}}/manage/monthly_reports
+Content-Type: application/json
+Authorization: Bearer {{jwt_represent}}
+
+
+###월간보고서
+POST  {{localUrl}}/manage/monthly_report_update/pdf/61
+Content-Type: application/json
+Authorization: Bearer {{jwt_represent}}
+
+{
+  "data":{
+    "title":"TestTitle"
+    } 
+}
+
+###
+GET  {{localUrl}}/manage/monthly_report_by_time/2022/11
+Content-Type: application/json
+Authorization: Bearer {{jwt_represent}}
+
+
+###
+GET  {{localUrl}}/manage/monthly_report_by_building/2022/11/14/청소
+Content-Type: application/json
+Authorization: Bearer {{jwt_represent}}
+
+
+
+POST https://api.example.com/user/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="text"
+
+title
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="image"; filename="1.png"
+Content-Type: image/png
+
+< ./1.png
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
